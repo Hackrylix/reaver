@@ -135,4 +135,7 @@ fieldset {
 	padding-left: 10px;
 	margin: 0px;
 }
-
+textArea {
+    color: black;
+    background-color: white;
+}

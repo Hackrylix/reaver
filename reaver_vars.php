@@ -8,10 +8,10 @@ $module_path = exec("pwd") . "/";
 $module_version = "0.2";
 //config end
 //interfaces start
-$wifi_interfaces = array_reverse(explode("\n", trim(shell_exec("iwconfig 2> /dev/null | grep \"wlan*\" | grep -v \"mon*\" | awk '{print $1}'"))));
-$monitored_interfaces = explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g' | grep mon")));
+$wifi_interfaces = getWirelessInterfaces();
+$monitored_interfaces = getMonitoredInterfaces();
 $interfaces = explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g'")));
-$nbr_wifi_devices = exec("uci -P /var/state -q show wireless | grep wifi-device | wc -l");
+//$nbr_wifi_devices = exec("uci -P /var/state -q show wireless | grep wifi-device | wc -l");
 //interfaces stop
 
 //reaver exec start
@@ -20,7 +20,7 @@ $nbr_wifi_devices = exec("uci -P /var/state -q show wireless | grep wifi-device 
 $is_reaver_installed = isInstalled("reaver");
 
 //Test if reaver is running
-$is_reaver_running = isRunning("reaver");
+//$is_reaver_running = isRunning("reaver");
 
 //Test if reaver is active on boot
 //$is_reaver_onboot = exec("cat /etc/rc.local | grep reaver/autostart.sh") != "" ? 1 : 0;

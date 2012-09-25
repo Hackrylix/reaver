@@ -38,7 +38,10 @@ require_once ("iwlist_parser.php");
                 else
                 {
                     echo "reaver";
-                    echo "&nbsp;<font color=\"red\"><strong>not installed</strong></font><br /><br />";
+                    echo "&nbsp;<font color=\"red\"><strong>not installed</strong></font>";
+                    echo '<input type="button" onclick="install_reaver()" value="install reaver" />';
+                    echo '[<input id="onusb" type="checkbox" value="1" /> on usb]';
+                    echo "<br /><br />";
                 }
 
                 echo '<hr />';
@@ -58,19 +61,22 @@ require_once ("iwlist_parser.php");
             <div class="contentTitle">Main</div>
             <div class="contentContent">
                 <?php
-                echo '<div>AP List [<a id="refresh" href="javascript:refresh_available_ap();">Scan AP</a>]</div><br />';
+                echo '<div>AP List | <input type="button" id="refresh_ap" onclick="refresh_available_ap();" value="Scan AP" /></div><br />';
+                echo '<em>Click on row to select the target AP</em>';
                 echo '<div id="list_ap"></div>';
-                echo '<em>Click on row to select the target AP</em><hr/>';
+                echo '<hr/>';
                 ?>
 
                 Victime :<br />
                 <input type="text" disabled style="background-color: black; color: white;" id="ap" />
                 <input type="text" disabled style="background-color: black; color: white;" id="victime" />
+                 <input type="text" size="2" disabled style="background-color: black; color: white;" id="channel" />
                 <input type="button" id="button_start" onclick="start_attack();" value="Attack target" />
                 <input type="button" id="button_stop"  onclick="stop_attack();" value="Stop attack" />
                 <br />
                 <input type="checkbox" id="option_S" />&nbsp;Use small DH keys to improve crack speed<br />
                 <input type="checkbox" id="option_a" />&nbsp;Auto detect the best advanced options for the target AP<br />
+                <input type="checkbox" id="option_c" />&nbsp;Set the 802.11 channel for the interface (implies -f : Disable channel hopping)<br />
                 <hr />
                 Output :<br />
                 <input type="button" id="button_refresh"  onclick="refresh_output();" value="Refresh output" />
@@ -85,7 +91,7 @@ require_once ("iwlist_parser.php");
                 </select>
                 <input type="button" id="start_ar" onclick="start_refresh();" value="On" /><input type="button" id="stop_ar" onclick="stop_refresh();" value="Off" />
                 <br />
-                <textarea id='output' name='output' cols='80' rows='24'></textarea>
+                <textarea id='output' disabled="disabled" name='output' cols='80' rows='24'></textarea>
 
             </div>
 
@@ -95,7 +101,7 @@ require_once ("iwlist_parser.php");
         <div class="sidepanelTitle">Log</div>
         <div class="sidepanelContent">
             <br />
-            <textarea id="log" disabled="disabled" ></textarea>
+            <textarea id="log" disabled="disabled" cols="30" rows="20"></textarea>
         </div>
     </div>
 

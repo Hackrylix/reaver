@@ -1,11 +1,16 @@
 var refreshId;
 
-function stop_refresh()
+function stop_refresh(s)
 {
     clearInterval(refreshId);
     refreshId=null;
-    $("#start_ar").removeAttr('disabled');
+    
+    if(s==null)
+        $("#start_ar").removeAttr('disabled');
+
     $("#stop_ar").attr('disabled','disabled');
+    
+     append_log("Auto-refresh disabled");
 }
 
 function start_refresh()
@@ -18,11 +23,16 @@ function start_refresh()
     
     $("#start_ar").attr('disabled','disabled');
     $("#stop_ar").removeAttr('disabled');
+     append_log("Auto-refresh enabled every "+($('#auto_time').val()/1000)+" sec");
 }
 
 function init() 
 {
-    $("#loading").ajaxStart(function(){$(this).show();}).ajaxStop(function(){$(this).hide();});
+    $("#loading").ajaxStart(function(){
+        $(this).show();
+    }).ajaxStop(function(){
+        $(this).hide();
+    });
     refresh_radio();
     refresh_interfaces();
     refresh_monitors();
@@ -37,14 +47,23 @@ function clear_all()
     $("#log").val("");
     $('#button_start').attr('disabled',"disabled");
     $('#button_stop').attr("disabled",'disabled');
-    $('#button_refresh').attr('disabled',"disabled");
-    $('#button_clear').attr('disabled',"disabled");
+    disableAttackButtons();
 }
 
 function clear_output()
 {
     $("#output").val("");
+     append_log("Output cleared");
 }
+
+function disableAttackButtons()
+{
+    $('#button_refresh').attr('disabled',"disabled");
+    $('#button_clear').attr('disabled',"disabled");
+    $("#start_ar").attr('disabled','disabled');
+    $('#stop_ar').attr("disabled",'disabled');
+}
+
 
 function refresh_radio() 
 {
@@ -69,13 +88,13 @@ function refresh_available_ap()
         data: "available_ap&interface="+$("#interfaces").val(),
         url: "reaver_actions.php",
         success: function(msg){
-            $("#list_ap").html(msg);
+            $("#list_ap").html(msg).slideDown();
             
             $('#survey-grid tr').click(function() 
             { 
                 selectVictime($(this).attr("name"));
             });
-           
+           append_log("AP list refreshed");
            			   
 				
         }
@@ -88,9 +107,12 @@ function selectVictime(victime)
     var arr  = victime.split(',');
     var ap=arr[0];
     var bssid=arr[1];
+    var channel=arr[2];
     $("#ap").val(ap);
     $("#victime").val(bssid);
+    $("#channel").val(channel);
     $('#button_start').removeAttr("disabled");
+    append_log("Victime selected : "+bssid);
     
 }
 
@@ -117,11 +139,13 @@ function start_attack()
 {
     var inter = $('#mon').val();
     var v = $("#victime").val();
+    var c = $("#channel").val();
     var option_S=$("#option_S").attr('checked');
     var option_a=$("#option_a").attr('checked');
+    var option_c=$("#option_c").attr('checked');
     $.ajax({
         type: "GET",
-        data: "reaver=1&start=1&interface="+inter+"&victime="+v+"&S="+option_S+"&a="+option_a,
+        data: "reaver=1&start=1&interface="+inter+"&victime="+v+"&ch="+c+"&S="+option_S+"&a="+option_a+"&c="+option_c,
         url: "reaver_actions.php",
         success: function(msg){
             $('#button_start').attr('disabled',"disabled");
@@ -129,6 +153,11 @@ function start_attack()
            
             $('#button_refresh').removeAttr("disabled");
             $('#button_clear').removeAttr('disabled');
+            
+            $('#start_ar').removeAttr("disabled");
+            
+            $("#list_ap").slideUp();
+            $("#refresh_ap").attr("disabled",'disabled');
             
             append_log(msg);
             refresh_output();
@@ -147,13 +176,15 @@ function stop_attack()
         data: "reaver=1&stop=1",
         url: "reaver_actions.php",
         success: function(msg){
-            $('#button_start').removeAttr("disabled");
-            $('#button_stop').attr('disabled',"disabled");
-            
-            $('#button_refresh').attr('disabled',"disabled");
-            $('#button_clear').attr('disabled',"disabled");
-            
             append_log(msg);
+            $('#button_stop').attr('disabled',"disabled");
+            $('#button_start').removeAttr("disabled");
+            disableAttackButtons();
+            
+            $("#list_ap").slideDown();
+            $("#refresh_ap").removeAttr("disabled");
+            stop_refresh('stop');
+            
         }
     });
 	
@@ -200,15 +231,22 @@ function stop_mon()
 
 function append_log(line)
 {
-    $("#log").val( $("#log").val()+"\n"+line).scrollTop($("#log")[0].scrollHeight - $("#log").height());
+    var now = new Date().toUTCString();
+    line = now+"\n"+line+"\n------------------\n";
+    $("#log").val( $("#log").val()+line).scrollTop($("#log")[0].scrollHeight - $("#log").height());
 }
 
 
 function install_reaver()
 {
+    var d="reaver&install";
+    
+    if($('#onusb').attr('checked')=="true")
+        d+="&onusb";
+    
     $.ajax({
         type: "GET",
-        data: "reaver&install",
+        data: d,
         url: "reaver_actions.php",
         success: function(msg){
             append_log(msg);

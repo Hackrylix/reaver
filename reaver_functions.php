@@ -41,4 +41,22 @@ function isRunning($command)
     return exec("ps auxww | grep $command | grep -v -e grep | grep -v -e php") != "" ? 1 : 0;
 }
 
+/**
+ * Get wlan interfaces
+ * @return Array Array of wlan interfaces
+ */
+function getWirelessInterfaces()
+{
+    return array_reverse(explode("\n", trim(shell_exec("iwconfig 2> /dev/null | grep \"wlan*\" | grep -v \"mon*\" | awk '{print $1}'"))));
+}
+
+/**
+ * Get monitored interfaces
+ * @return Array Array of mon interfaces
+ */
+function getMonitoredInterfaces()
+{
+    return explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g' | grep mon")));
+}
+
 ?>
