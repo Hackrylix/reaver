@@ -27,7 +27,7 @@ function getIpFromInterface($interface)
  */
 function isInstalled($command)
 {
-    return exec("which $command") != "*" ? 1 : 0;
+    return exec("which $command") != "" ? 1 : 0;
 }
 
 /**
