@@ -258,6 +258,6 @@ else if (isset($_GET['list']))
 }
 else
 {
-    echo "NO TRIGGER; please debug...";
+    echo "NO TRIGGER; please report to hackrylix@gmail.com...";
 }
 ?>
