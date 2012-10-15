@@ -5,7 +5,7 @@ require_once('reaver_functions.php');
 //config start
 $module_name = "Reaver";
 $module_path = exec("pwd") . "/";
-$module_version = "0.2";
+$module_version = "0.3";
 //config end
 //interfaces start
 $wifi_interfaces = getWirelessInterfaces();
