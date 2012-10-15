@@ -39,8 +39,8 @@ if (isset($_GET['reaver']))
         }
         else if (isset($_GET['start']))
         {
-            if (isRunning('reaver') == "1")
-                exec('killall reaver && wait 5');
+//            if (isRunning('reaver') == "1")
+//                exec('killall reaver && wait 5');
 
             $victime = $_GET['victime'];
             $int = $_GET['interface'];
@@ -53,7 +53,7 @@ if (isset($_GET['reaver']))
 
                 if (isset($_GET['c']) && $_GET['c'] == "true")
                 {
-                    if (isset($_GET['ch']) && $_GET['ch'] = !"")
+                    if (isset($_GET['ch']) && $_GET['ch'] != "")
                         $cmd .=" -f -c " . $_GET['ch'];
                 }
 
@@ -90,6 +90,16 @@ if (isset($_GET['reaver']))
 else if (isset($_GET['interface']) && $_GET['interface'] != "")
 {
     $interface = $_GET['interface'];
+    if (isset($_GET['up']))
+    {
+        shell_exec("ifconfig " . $interface . " up &");
+        echo "$interface up";
+    }
+    else if (isset($_GET['down']))
+    {
+        shell_exec("ifconfig " . $interface . " down &");
+        echo "$interface down";
+    }
     if (isset($_GET['mon_start']))
     {
         shell_exec("airmon-ng start " . $interface . " &");
@@ -211,10 +221,14 @@ else if (isset($_GET['list']))
             echo '<td>' . $interface . ' (mode ' . $mode . ')</td>';
             echo '<td>';
             if (!$disabled)
-                echo '<font color="lime"><strong>enabled</strong></font>';
+                echo '<font color="lime"><strong>enabled</strong></font><br />
+                    <input type="button" value="disable" onclick="down_int(\''.$interface.'\');" />';
             else
-                echo '<font color="red"><strong>disabled</strong></font>';
-            echo '</td>';
+            {
+                echo '<font color="red"><strong>disabled</strong></font><br />
+                    <input type="button" value="enable" onclick="up_int(\''.$interface.'\');" />';
+            }
+                echo '</td>';
 
             echo '</tr>';
         }
