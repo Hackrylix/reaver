@@ -10,7 +10,7 @@ function stop_refresh(s)
 
     $("#stop_ar").attr('disabled','disabled');
     
-     append_log("Auto-refresh disabled");
+    append_log("Auto-refresh disabled");
 }
 
 function start_refresh()
@@ -23,7 +23,7 @@ function start_refresh()
     
     $("#start_ar").attr('disabled','disabled');
     $("#stop_ar").removeAttr('disabled');
-     append_log("Auto-refresh enabled every "+($('#auto_time').val()/1000)+" sec");
+    append_log("Auto-refresh enabled every "+($('#auto_time').val()/1000)+" sec");
 }
 
 function init() 
@@ -53,7 +53,7 @@ function clear_all()
 function clear_output()
 {
     $("#output").val("");
-     append_log("Output cleared");
+    append_log("Output cleared");
 }
 
 function disableAttackButtons()
@@ -94,7 +94,7 @@ function refresh_available_ap()
             { 
                 selectVictime($(this).attr("name"));
             });
-           append_log("AP list refreshed");
+            append_log("AP list refreshed");
            			   
 				
         }
@@ -158,9 +158,12 @@ function start_attack()
             
             $("#list_ap").slideUp();
             $("#refresh_ap").attr("disabled",'disabled');
-            
+            $("#option_S").attr('disabled','disabled');
+            $("#option_a").attr('disabled','disabled');
+            $("#option_c").attr('disabled','disabled');
             append_log(msg);
             refresh_output();
+            start_refresh();
         }
     });
 	
@@ -180,7 +183,9 @@ function stop_attack()
             $('#button_stop').attr('disabled',"disabled");
             $('#button_start').removeAttr("disabled");
             disableAttackButtons();
-            
+            $("#option_S").removeAttr('disabled');
+            $("#option_a").removeAttr('disabled');
+            $("#option_c").removeAttr('disabled');
             $("#list_ap").slideDown();
             $("#refresh_ap").removeAttr("disabled");
             stop_refresh('stop');
@@ -255,4 +260,42 @@ function install_reaver()
     });
 }
 
+
+function up_int(inter) 
+{
+//    var inter = $('#interfaces').val();
+    if(inter=='')
+        alert("No interface selected...");
+    else
+    {
+        $.ajax({
+            type: "GET",
+            data: "up&interface="+inter,
+            url: "reaver_actions.php",
+            success: function(msg){
+                append_log(msg);
+                refresh_radio();			
+            }
+        });
+    }
+}
+
+function down_int(inter) 
+{
+//    var inter = $('#interfaces').val();
+    if(inter=='')
+       alert("No interface selected...");
+    else
+    {
+        $.ajax({
+            type: "GET",
+            data: "down&interface="+inter,
+            url: "reaver_actions.php",
+            success: function(msg){
+                append_log(msg);
+                refresh_radio();		
+            }
+        });
+    }
+}
 

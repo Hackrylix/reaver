@@ -5,8 +5,6 @@ require_once ("iwlist_parser.php");
 <html>
     <head>
         <title>Pineapple Control Center - <?php echo $module_name . " [v" . $module_version . "]"; ?></title>
-        <META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
-
         <script type="text/javascript" src="/includes/jquery.min.js"></script>
         <script type="text/javascript" src="js/reaver.js"></script>
 
@@ -23,9 +21,9 @@ require_once ("iwlist_parser.php");
             });
         </script>
 
-        <?php include("/pineapple/includes/navbar.php"); ?><br />
+        <?php include("/pineapple/includes/navbar.php"); ?>
 
-        <div class="sidepanelLeft">
+        <div class="sidepanelLeft" style="margin-top: 2px;">
             <div class="sidepanelTitle"><?php echo $module_name . " [v" . $module_version . "]"; ?></div>
             <div class="sidepanelContent">
                 <?php
@@ -46,9 +44,10 @@ require_once ("iwlist_parser.php");
 
                 echo '<hr />';
                 echo 'Radio interfaces :<br /><div id="list_radio"></div><hr />';
-                echo 'Available interfaces :<br /><div id="list_int"></div><hr /> ';
-                echo 'Monitored interfaces :<br /><div id="list_mon"></div>';
-
+                echo 'Available interfaces :<br /><div id="list_int"></div>
+                    <hr />';
+                echo 'Monitored interfaces :<br /><div id="list_mon"></div><hr />';
+                echo 'Log :<br /><textarea id="log" disabled="disabled" cols="30" rows="20"></textarea>';
                 echo '<div align="center" id="loading"><hr /><p><img src="loading.gif" /></p></div>';
                 ?>
 
@@ -56,8 +55,8 @@ require_once ("iwlist_parser.php");
             </div>
 
         </div>
-
-        <div class="content">
+       
+        <div class="content" style="margin-top: 5px;">
             <div class="contentTitle">Main</div>
             <div class="contentContent">
                 <?php
@@ -96,14 +95,7 @@ require_once ("iwlist_parser.php");
             </div>
 
         </div>
-    </div>
-    <div class="sidepanelRight">
-        <div class="sidepanelTitle">Log</div>
-        <div class="sidepanelContent">
-            <br />
-            <textarea id="log" disabled="disabled" cols="30" rows="20"></textarea>
-        </div>
-    </div>
+   
 
 </body>
 </html>
