@@ -274,7 +274,8 @@ function up_int(inter)
             url: "reaver_actions.php",
             success: function(msg){
                 append_log(msg);
-                refresh_radio();			
+                refresh_radio();
+                refresh_interfaces();
             }
         });
     }
@@ -293,7 +294,8 @@ function down_int(inter)
             url: "reaver_actions.php",
             success: function(msg){
                 append_log(msg);
-                refresh_radio();		
+                refresh_radio();
+                refresh_interfaces();		
             }
         });
     }

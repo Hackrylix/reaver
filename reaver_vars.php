@@ -8,9 +8,9 @@ $module_path = exec("pwd") . "/";
 $module_version = "0.3";
 //config end
 //interfaces start
-$wifi_interfaces = getWirelessInterfaces();
-$monitored_interfaces = getMonitoredInterfaces();
-$interfaces = explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g'")));
+//$wifi_interfaces = getWirelessInterfaces();
+//$monitored_interfaces = getMonitoredInterfaces();
+//$interfaces = explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g'")));
 //$nbr_wifi_devices = exec("uci -P /var/state -q show wireless | grep wifi-device | wc -l");
 //interfaces stop
 

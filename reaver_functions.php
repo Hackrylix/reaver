@@ -43,20 +43,41 @@ function isRunning($command)
 
 /**
  * Get wlan interfaces
- * @return Array Array of wlan interfaces
+ * @return Array Array of wlan interfaces or NULL if no interfaces found
  */
 function getWirelessInterfaces()
 {
-    return array_reverse(explode("\n", trim(shell_exec("iwconfig 2> /dev/null | grep \"wlan*\" | grep -v \"mon*\" | awk '{print $1}'"))));
+    $cmd = trim(shell_exec("iwconfig 2> /dev/null | grep \"wlan*\" | grep -v \"mon*\" | awk '{print $1}'"));
+    if ($cmd != "")
+        return array_reverse(explode("\n", $cmd));
+    else
+        return NULL;
+}
+
+/**
+ * Get enabled wlan interfaces
+ * @return Array Array of wlan interfaces or NULL if no up interfaces found
+ */
+function getEnabledWirelessInterfaces()
+{
+    $cmd = trim(shell_exec("ifconfig 2> /dev/null | grep \"wlan*\" | grep -v \"mon*\" | awk '{print $1}'"));
+    if ($cmd != "")
+        return array_reverse(explode("\n", $cmd));
+    else
+        return NULL;
 }
 
 /**
  * Get monitored interfaces
- * @return Array Array of mon interfaces
+ * @return Array Array of mon interfaces or NULL if no mon interfaces found
  */
 function getMonitoredInterfaces()
 {
-    return explode("\n", trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g' | grep mon")));
+    $cmd = trim(shell_exec("cat /proc/net/dev | tail -n +3 | cut -f1 -d: | sed 's/ //g' | grep mon"));
+    if ($cmd != "")
+        return explode("\n", $cmd);
+    else
+        return NULL;
 }
 
 ?>

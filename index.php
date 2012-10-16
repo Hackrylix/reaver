@@ -1,5 +1,1 @@
-<?php
-
-header('Location: reaver.php');
-
-?>
+<?php header('Location: reaver.php'); ?>

@@ -100,7 +100,7 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
         shell_exec("ifconfig " . $interface . " down &");
         echo "$interface down";
     }
-    if (isset($_GET['mon_start']))
+    else if (isset($_GET['mon_start']))
     {
         shell_exec("airmon-ng start " . $interface . " &");
         echo "Monitor started on $interface";
@@ -118,6 +118,7 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
 
         if (!empty($p))
         {
+            echo '<em>Click on a row to select the target AP</em>';
             echo '<table id="survey-grid" class="grid" cellspacing="0">';
             echo '<tr class="header">';
             echo '<td>SSID</td>';
@@ -132,7 +133,7 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
         }
         else
         {
-            echo "<em>No data...</em>";
+            echo "<em>No access-point found, please retry or change the wifi interface used (in left panel)...</em>";
         }
 
         for ($i = 1; $i <= count($p[$interface]); $i++)
@@ -148,7 +149,7 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
             echo '<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . ',' . $p[$interface][$i]["Channel"] . '">';
 
             echo '<td>' . $p[$interface][$i]["ESSID"] . '</td>';
-            $MAC_address = explode(":", $p[$interface][$i]["Address"]);
+//            $MAC_address = explode(":", $p[$interface][$i]["Address"]);
 
 
             echo '<td>' . $p[$interface][$i]["Address"] . '</td>';
@@ -200,7 +201,8 @@ else if (isset($_GET['list']))
 {
     if (isset($_GET['radio']))
     {
-        echo '<table class="interfaces">';
+        $wifi_interfaces=  getWirelessInterfaces();
+        echo '<table>';
 
         for ($i = 0; $i < count($wifi_interfaces); $i++)
         {
@@ -221,14 +223,11 @@ else if (isset($_GET['list']))
             echo '<td>' . $interface . ' (mode ' . $mode . ')</td>';
             echo '<td>';
             if (!$disabled)
-                echo '<font color="lime"><strong>enabled</strong></font><br />
-                    <input type="button" value="disable" onclick="down_int(\''.$interface.'\');" />';
+                echo '<font color="lime"><strong>enabled</strong></font>&nbsp;[<a id="down_int" href="javascript:down_int(\'' . $interface . '\');">Disable</a>]';
             else
-            {
-                echo '<font color="red"><strong>disabled</strong></font><br />
-                    <input type="button" value="enable" onclick="up_int(\''.$interface.'\');" />';
-            }
-                echo '</td>';
+                echo '<font color="red"><strong>disabled</strong></font>&nbsp;[<a id="enable_int" href="javascript:up_int(\'' . $interface . '\');">Enable</a>]';
+
+            echo '</td>';
 
             echo '</tr>';
         }
@@ -236,9 +235,10 @@ else if (isset($_GET['list']))
     }
     else if (isset($_GET['int']))
     {
-        if (count($wifi_interfaces) == 0)
+        $wifi_interfaces=  getEnabledWirelessInterfaces();
+        if ($wifi_interfaces==NULL)
         {
-            echo 'No wifi interface found...';
+            echo 'No enabled wifi interface found...';
         }
         else
         {
@@ -253,7 +253,8 @@ else if (isset($_GET['list']))
     }
     else if (isset($_GET['mon']))
     {
-        if (count($monitored_interfaces) == 0)
+        $monitored_interfaces=getMonitoredInterfaces();
+        if ($monitored_interfaces==NULL)
         {
             echo 'No monitor interface found...';
         }
