@@ -1,7 +1,7 @@
 <?php
 
 require_once("iwlist_parser.php");
-require("reaver_vars.php");
+require_once("reaver_functions.php");
 
 if (isset($_GET['reaver']))
 {
@@ -19,7 +19,7 @@ if (isset($_GET['reaver']))
         }
         echo shell_exec($cmd);
     }
-    else if ($is_reaver_installed)
+    else if (isInstalled("reaver"))
     {
         if (isset($_GET['refresh']))
         {

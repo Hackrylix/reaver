@@ -255,7 +255,7 @@ function install_reaver()
         url: "reaver_actions.php",
         success: function(msg){
             append_log(msg);
-            refresh_monitors();			
+            location.reload();			
         }
     });
 }

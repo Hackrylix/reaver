@@ -1,5 +1,20 @@
 <?php
 
+
+function getModuleName()
+{
+    return "reaver";
+}
+
+function getModuleVersion()
+{
+    return "0.4";
+}
+
+function getModuleAuthor()
+{
+    return "Hackrylix";
+}
 function kbytes_to_string($kb)
 {
     $units = array('TB', 'GB', 'MB', 'KB');
@@ -80,4 +95,17 @@ function getMonitoredInterfaces()
         return NULL;
 }
 
+
+/**
+ * Check if usb is mounted
+ * @return true if mounted else return false
+ */
+function isUsbMounted()
+{
+    $cmd = trim(shell_exec("mount | grep /dev/sd"));
+    if ($cmd != "")
+        return true;
+    else
+        return false;
+}
 ?>

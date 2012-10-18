@@ -1,10 +1,9 @@
 <?php
-require("reaver_vars.php");
-require_once ("iwlist_parser.php");
+require_once ("reaver_functions.php");
 ?>
 <html>
     <head>
-        <title>Pineapple Control Center - <?php echo $module_name . " [v" . $module_version . "]"; ?></title>
+        <title>Pineapple Control Center - <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></title>
         <script type="text/javascript" src="reaver.js"></script>
         <script type="text/javascript" src="/includes/jquery.min.js"></script>
         <link rel="stylesheet" type="text/css" href="reaver.css" />
@@ -19,11 +18,11 @@ require_once ("iwlist_parser.php");
         <?php include("/pineapple/includes/navbar.php"); ?>
         <div id="modulePanel">
             <div id="leftPanel">
-                <div class="panelTitle"><?php echo $module_name . " [v" . $module_version . "]"; ?></div>
+                <div class="panelTitle"> <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></div>
                 <div class="panelContent">
                     <?php
                     /* @var $is_reaver_installed boolean */
-                    if ($is_reaver_installed)
+                    if (isInstalled("reaver"))
                     {
                         echo "reaver";
                         echo "&nbsp;<font color=\"lime\"><strong>installed</strong></font>";
@@ -33,10 +32,11 @@ require_once ("iwlist_parser.php");
                         echo "reaver";
                         echo "&nbsp;<font color=\"red\"><strong>not installed</strong></font>";
                         echo '<input type="button" onclick="install_reaver()" value="install reaver" />';
-                        echo '[<input id="onusb" type="checkbox" value="1" /> on usb]';
+                        if (isUsbMounted())
+                            echo '[<input id="onusb" type="checkbox" value="1" /> on usb]';
                         echo "<br /><br />";
                     }
-                   
+
                     echo '<hr />';
                     echo 'Radio interfaces :<br /><div id="list_radio"></div><hr />';
                     echo 'Available wifi interfaces :<br /><div id="list_int"></div><hr />';
