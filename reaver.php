@@ -1,6 +1,4 @@
-<?php
-require_once ("reaver_functions.php");
-?>
+<?php require_once ("reaver_functions.php"); ?>
 <html>
     <head>
         <title>Pineapple Control Center - <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></title>
