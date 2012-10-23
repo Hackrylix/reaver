@@ -246,7 +246,7 @@ function install_reaver()
 {
     var d="reaver&install";
     
-    if($('#onusb').attr('checked')=="true")
+    if($('#onusb').is(':checked'))
         d+="&onusb";
     
     $.ajax({

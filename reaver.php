@@ -19,16 +19,19 @@
                 <div class="panelTitle"> <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></div>
                 <div class="panelContent">
                     <?php
-                    /* @var $is_reaver_installed boolean */
-                    if (isInstalled("reaver"))
+                    $isOnUsb = isInstalledOnUsb("reaver");
+                    if ($isOnUsb == 2)
                     {
-                        echo "reaver";
-                        echo "&nbsp;<font color=\"lime\"><strong>installed</strong></font>";
+                        echo "reaver is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[usb]";
                     }
-                    else
+                    else if ($isOnUsb == 1)
                     {
-                        echo "reaver";
-                        echo "&nbsp;<font color=\"red\"><strong>not installed</strong></font>";
+                        echo "reaver is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[internal]";
+                    }
+                    else if ($isOnUsb == 0)
+                    {
+
+                        echo "reaver is<font color=\"red\"><strong>not installed</strong></font>";
                         echo '<input type="button" onclick="install_reaver()" value="install reaver" />';
                         if (isUsbMounted())
                             echo '[<input id="onusb" type="checkbox" value="1" /> on usb]';

@@ -1,6 +1,5 @@
 <?php
 
-
 function getModuleName()
 {
     return "reaver";
@@ -8,13 +7,14 @@ function getModuleName()
 
 function getModuleVersion()
 {
-    return "0.4";
+    return "0.5";
 }
 
 function getModuleAuthor()
 {
     return "Hackrylix";
 }
+
 function kbytes_to_string($kb)
 {
     $units = array('TB', 'GB', 'MB', 'KB');
@@ -37,23 +37,46 @@ function getIpFromInterface($interface)
 /**
  * Test if a command is installed
  * @param String The command to check
- * @return int 1 if true or 0 if false
+ * @return true if installed or false if not
  * 
  */
 function isInstalled($command)
 {
-    return exec("which $command") != "" ? 1 : 0;
+
+    if (file_exists("/usb/usr/bin/$command") || file_exists("/usr/bin/$command"))
+        return true;
+    else
+        return false;
+}
+
+/**
+ * Test if a command is installed on usb
+ * @param String The command to check
+ * @return 2 if installed on usb or 1 if not on usb or 0 if not installed
+ * 
+ */
+function isInstalledOnUsb($command)
+{
+    if (isInstalled($command))
+    {
+        if (file_exists("/usb/usr/bin/$command"))
+            return 2;
+        else if (file_exists("/usr/bin/$command"))
+            return 1;
+    }
+    else
+        return 0;
 }
 
 /**
  * Test if a command is running
  * @param String The command to check
- * @return int 1 if true or 0 if false
+ * @return true if running or false if not
  * 
  */
 function isRunning($command)
 {
-    return exec("ps auxww | grep $command | grep -v -e grep | grep -v -e php") != "" ? 1 : 0;
+    return exec("ps auxww | grep $command | grep -v -e grep | grep -v -e php") != "" ? true : false;
 }
 
 /**
@@ -95,17 +118,17 @@ function getMonitoredInterfaces()
         return NULL;
 }
 
-
 /**
  * Check if usb is mounted
  * @return true if mounted else return false
  */
 function isUsbMounted()
 {
-    $cmd = trim(shell_exec("mount | grep /dev/sd"));
+    $cmd = trim(shell_exec("mount | grep 'on /usb'"));
     if ($cmd != "")
         return true;
     else
         return false;
 }
+
 ?>

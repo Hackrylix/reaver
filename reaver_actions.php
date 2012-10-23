@@ -7,17 +7,11 @@ if (isset($_GET['reaver']))
 {
     if (isset($_GET['install']))
     {
-
-        $cmd = "opkg update && opkg install reaver ";
+        $dest = "";
         if (isset($_GET['onusb']))
-        {
-            $cmd.=" --dest usb &";
-        }
-        else
-        {
-            $cmd .=" &";
-        }
-        echo shell_exec($cmd);
+            $dest = "--dest usb";
+
+        echo shell_exec("opkg update && opkg install $dest reaver ");
     }
     else if (isInstalled("reaver"))
     {
@@ -44,8 +38,6 @@ if (isset($_GET['reaver']))
 
             $victime = $_GET['victime'];
             $int = $_GET['interface'];
-
-
 
             if ($victime != "" && $int != "")
             {
@@ -149,9 +141,6 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
             echo '<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . ',' . $p[$interface][$i]["Channel"] . '">';
 
             echo '<td>' . $p[$interface][$i]["ESSID"] . '</td>';
-//            $MAC_address = explode(":", $p[$interface][$i]["Address"]);
-
-
             echo '<td>' . $p[$interface][$i]["Address"] . '</td>';
             echo '<td>' . $p[$interface][$i]["Signal level"] . '</td>';
             echo "<td>" . $quality . "%</td>";
@@ -201,7 +190,7 @@ else if (isset($_GET['list']))
 {
     if (isset($_GET['radio']))
     {
-        $wifi_interfaces=  getWirelessInterfaces();
+        $wifi_interfaces = getWirelessInterfaces();
         echo '<table>';
 
         for ($i = 0; $i < count($wifi_interfaces); $i++)
@@ -235,8 +224,8 @@ else if (isset($_GET['list']))
     }
     else if (isset($_GET['int']))
     {
-        $wifi_interfaces=  getEnabledWirelessInterfaces();
-        if ($wifi_interfaces==NULL)
+        $wifi_interfaces = getEnabledWirelessInterfaces();
+        if ($wifi_interfaces == NULL)
         {
             echo 'No enabled wifi interface found...';
         }
@@ -253,8 +242,8 @@ else if (isset($_GET['list']))
     }
     else if (isset($_GET['mon']))
     {
-        $monitored_interfaces=getMonitoredInterfaces();
-        if ($monitored_interfaces==NULL)
+        $monitored_interfaces = getMonitoredInterfaces();
+        if ($monitored_interfaces == NULL)
         {
             echo 'No monitor interface found...';
         }
