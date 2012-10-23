@@ -2,12 +2,12 @@
 
 function getModuleName()
 {
-    return "reaver";
+    return getConf('moduleName');
 }
 
 function getModuleVersion()
 {
-    return "0.5";
+    return getConf('moduleVersion');
 }
 
 function getModuleAuthor()
@@ -52,7 +52,7 @@ function isInstalled($command)
 /**
  * Test if a command is installed on usb
  * @param String The command to check
- * @return 2 if installed on usb or 1 if not on usb or 0 if not installed
+ * @return 2 if installed on usb | 1 if not on usb | 0 if not installed
  * 
  */
 function isInstalledOnUsb($command)
@@ -131,4 +131,191 @@ function isUsbMounted()
         return false;
 }
 
+/**
+ * install a command via opkg
+ * @return the result of the command
+ */
+function install($command, $onusb = false)
+{
+    $dest = "";
+    if ($onusb)
+        $dest = "--dest usb";
+
+    return shell_exec("opkg update && opkg install $dest $command ");
+}
+
+/**
+ * Get the radio int list
+ * @return string
+ */
+function getListRadio()
+{
+    $str = "";
+    $wifi_interfaces = getWirelessInterfaces();
+    $str.= '<table>';
+
+    for ($i = 0; $i < count($wifi_interfaces); $i++)
+    {
+        $interface = $wifi_interfaces[$i];
+        //$mac_address = exec("uci get wireless.radio" . $i . ".macaddr");
+        //$disabled = exec("uci get wireless.radio" . $i . ".disabled");
+
+        $mode = exec("uci get wireless.@wifi-iface[" . $i . "].mode");
+        //$interface = exec("ifconfig | grep -i " . $mac_address . " | awk '{print $1}'");
+        //$interface = $interface != "" ? $interface : "-";
+
+        $disabled = exec("ifconfig  | grep " . $interface . " | awk '{ print $1}'");
+        $disabled = $disabled != "" ? false : true;
+
+        $str.='<tr>
+                    <td>radio' . $i . '</td>
+                    <td>' . $interface . ' (mode ' . $mode . ')</td>
+                    <td>';
+        if (!$disabled)
+            $str.='<font color="lime"><strong>enabled</strong></font>&nbsp;[<a id="down_int" href="javascript:down_int(\'' . $interface . '\');">Disable</a>]';
+        else
+            $str.='<font color="red"><strong>disabled</strong></font>&nbsp;[<a id="enable_int" href="javascript:up_int(\'' . $interface . '\');">Enable</a>]';
+
+        $str.='</td></tr>';
+    }
+    $str.= '</table>';
+    return $str;
+}
+
+/**
+ * Get the interface List
+ * @return string
+ */
+function getListInterface()
+{
+    $str = "";
+
+    $wifi_interfaces = getEnabledWirelessInterfaces();
+    if ($wifi_interfaces == NULL)
+    {
+        $str.= 'No enabled wifi interface found...';
+    }
+    else
+    {
+        $str.='<select id="interfaces">';
+        foreach ($wifi_interfaces as $value)
+        {
+            $str.='<option value="' . $value . '">' . $value . '</option>';
+        }
+        $str.='</select>&nbsp;';
+        $str.='[<a id="start_mon" href="javascript:start_mon();">Start mon</a>]';
+    }
+
+    return $str;
+}
+
+/**
+ * Get monitor interface list
+ * @return string
+ */
+function getListMonitor()
+{
+    $str = "";
+    $monitored_interfaces = getMonitoredInterfaces();
+    if ($monitored_interfaces == NULL)
+    {
+        $str.='No monitor interface found...';
+    }
+    else
+    {
+        $str.='<select id="mon">';
+        foreach ($monitored_interfaces as $value)
+        {
+
+            $str.='<option value="' . $value . '">' . $value . '</option>';
+        }
+        $str.='</select>&nbsp;';
+        $str.='[<a id="stop_mon" href="javascript:stop_mon();">Stop mon</a>]';
+    }
+    return $str;
+}
+
+/**
+ * Read the conf file and return the value matching with the passed parametre
+ * @param String the key
+ * @return String the value
+ */
+function getConf($k)
+{
+    //$configArray = explode("\n", trim(file_get_contents("reaver.conf")));
+    $configArray = parse_ini_file("reaver.conf");
+    return $configArray[$k];
+}
+
+/**
+ * Edit the $k value and Write config in the config file
+ * @param String $k The key to edit
+ * @param String $val The new Value
+ * @return string Error/Success message
+ */
+function setConf($k, $val)
+{
+    //$configArray = explode("\n", trim(file_get_contents("reaver.conf")));
+    $configArray = parse_ini_file("reaver.conf");
+    $configArray[$k] = $val;
+    $ok = write_conf_file($configArray, "reaver.conf");
+    if ($ok)
+        return "Setting '$k' = '$val' updated !";
+    else
+        return "Error while saving settings";
+}
+/**
+ * Read the conf file and return the associated array
+ * @return Array the config Array
+ */
+function getConfMulti()
+{
+    return parse_ini_file("reaver.conf");
+}
+/**
+ * Write modified config in the config file
+ * @param Array array to write in file
+ * @return string Error/Success message
+ */
+function setConfMulti($array)
+{
+    $configArray = parse_ini_file("reaver.conf");
+    foreach ($array as $key => $value)
+    {
+        $configArray[$key]=$value;
+    }
+    $ok = write_conf_file($configArray, "reaver.conf");
+    if ($ok)
+        return "Settings updated !";
+    else
+        return "Error while saving settings";
+}
+
+/**
+ * Write the giver configArray to the $path
+ * @param ArrayAssoc $configArray the array to write
+ * @param String $path the config file path
+ * @return boolean true when writed or false if an error occurred
+ */
+function write_conf_file($configArray, $path)
+{
+    $content = "";
+
+    foreach ($configArray as $key => $value)
+    {
+        $content.="$key=$value\n";
+    }
+
+    if (!$handle = fopen($path, 'w'))
+    {
+        return false;
+    }
+
+    if (!fwrite($handle, $content))
+    {
+        return false;
+    }
+    fclose($handle);
+    return true;
+}
 ?>

@@ -7,11 +7,11 @@ if (isset($_GET['reaver']))
 {
     if (isset($_GET['install']))
     {
-        $dest = "";
+       $usb=false;
         if (isset($_GET['onusb']))
-            $dest = "--dest usb";
-
-        echo shell_exec("opkg update && opkg install $dest reaver ");
+            $usb=true;
+        
+        echo install("reaver",$usb);
     }
     else if (isInstalled("reaver"))
     {
@@ -20,8 +20,8 @@ if (isset($_GET['reaver']))
             if (isset($_GET['bssid']) && $_GET['bssid'] != "")
             {
                 $bssid = $_GET['bssid'];
-                $cmd = "cat /pineapple/logs/reaver-$bssid.log";
-
+                $logFile = getConf('logPath').'reaver-'.$bssid.'.log';
+                $cmd = "cat $logFile";
                 exec($cmd, $output);
                 foreach ($output as $outputline)
                 {
@@ -41,26 +41,37 @@ if (isset($_GET['reaver']))
 
             if ($victime != "" && $int != "")
             {
+                $logFile = getConf('logPath').'reaver-'.$victime.'.log';
+                $options = "";
                 $cmd = "reaver -i $int -b $victime ";
 
                 if (isset($_GET['c']) && $_GET['c'] == "true")
                 {
                     if (isset($_GET['ch']) && $_GET['ch'] != "")
+                    {
                         $cmd .=" -f -c " . $_GET['ch'];
+                        $options.="c";
+                    }
                 }
 
                 if (isset($_GET['S']) && $_GET['S'] == "true")
+                {
                     $cmd .=" -S ";
-
+                    $options.="S";
+                }
                 if (isset($_GET['a']) && $_GET['a'] == "true")
+                {
                     $cmd .=" -a ";
-
-                $cmd .= " -vv >> /pineapple/logs/reaver-$victime.log -D &";
+                    $options.="a";
+                }
+                $cmd .= " -vv >> $logFile -D &";
 
                 exec($cmd);
 
                 echo "Attack Started !";
                 echo "\n$cmd";
+                $conf = array('lastVictime' => $victime , 'lastOptions' => $options );
+                setConfMulti($conf);
             }
             else
             {
@@ -190,73 +201,50 @@ else if (isset($_GET['list']))
 {
     if (isset($_GET['radio']))
     {
-        $wifi_interfaces = getWirelessInterfaces();
-        echo '<table>';
-
-        for ($i = 0; $i < count($wifi_interfaces); $i++)
-        {
-            $interface = $wifi_interfaces[$i];
-            //$mac_address = exec("uci get wireless.radio" . $i . ".macaddr");
-            //$disabled = exec("uci get wireless.radio" . $i . ".disabled");
-
-            $mode = exec("uci get wireless.@wifi-iface[" . $i . "].mode");
-            //$interface = exec("ifconfig | grep -i " . $mac_address . " | awk '{print $1}'");
-            //$interface = $interface != "" ? $interface : "-";
-
-            $disabled = exec("ifconfig  | grep " . $interface . " | awk '{ print $1}'");
-            $disabled = $disabled != "" ? false : true;
-
-            echo '<tr>';
-
-            echo '<td>radio' . $i . '</td>';
-            echo '<td>' . $interface . ' (mode ' . $mode . ')</td>';
-            echo '<td>';
-            if (!$disabled)
-                echo '<font color="lime"><strong>enabled</strong></font>&nbsp;[<a id="down_int" href="javascript:down_int(\'' . $interface . '\');">Disable</a>]';
-            else
-                echo '<font color="red"><strong>disabled</strong></font>&nbsp;[<a id="enable_int" href="javascript:up_int(\'' . $interface . '\');">Enable</a>]';
-
-            echo '</td>';
-
-            echo '</tr>';
-        }
-        echo '</table>';
+       echo getListRadio();
     }
     else if (isset($_GET['int']))
     {
-        $wifi_interfaces = getEnabledWirelessInterfaces();
-        if ($wifi_interfaces == NULL)
-        {
-            echo 'No enabled wifi interface found...';
-        }
-        else
-        {
-            echo '<select id="interfaces">';
-            foreach ($wifi_interfaces as $value)
-            {
-                echo '<option value="' . $value . '">' . $value . '</option>';
-            }
-            echo '</select>&nbsp;';
-            echo '[<a id="start_mon" href="javascript:start_mon();">Start mon</a>]';
-        }
+        echo getListInterface();
     }
     else if (isset($_GET['mon']))
     {
-        $monitored_interfaces = getMonitoredInterfaces();
-        if ($monitored_interfaces == NULL)
+        echo getListMonitor();
+    }
+}
+else if (isset($_GET['log']))
+{
+    if(isset($_GET["action"])&& $_GET['action']!="")
+    {
+        $action = $_GET['action'];
+        if($action=="delete")
         {
-            echo 'No monitor interface found...';
-        }
-        else
-        {
-            echo '<select id="mon">';
-            foreach ($monitored_interfaces as $value)
+            if(isset($_GET["bssid"])&& $_GET['bssid']!="")
             {
-
-                echo '<option value="' . $value . '">' . $value . '</option>';
+                $bssid=$_GET['bssid'];
+                $file = getConf('logPath').'reaver-'.$bssid.'.log';
+                if(file_exists($file))
+                {
+                    exec('rm '.$file);
+                    echo "Log file deleted";
+                }
+                else
+                    echo "no log file found";
             }
-            echo '</select>&nbsp;';
-            echo '[<a id="stop_mon" href="javascript:stop_mon();">Stop mon</a>]';
+        }
+        else if($action=="check")
+        {
+            if(isset($_GET["bssid"])&& $_GET['bssid']!="")
+            {
+                $bssid=$_GET['bssid'];
+                $file = getConf('logPath').'reaver-'.$bssid.'.log';
+                if(file_exists($file))
+                {
+                   echo "yes";
+                }
+                else
+                    echo "no";
+            }
         }
     }
 }

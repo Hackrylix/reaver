@@ -62,6 +62,7 @@ function disableAttackButtons()
     $('#button_clear').attr('disabled',"disabled");
     $("#start_ar").attr('disabled','disabled');
     $('#stop_ar').attr("disabled",'disabled');
+    $('#button_deleteLog').attr("disabled",'disabled');
 }
 
 
@@ -112,8 +113,31 @@ function selectVictime(victime)
     $("#victime").val(bssid);
     $("#channel").val(channel);
     $('#button_start').removeAttr("disabled");
+    log_exists();
+    
     append_log("Victime selected : "+bssid);
     
+}
+
+function log_exists()
+{
+    $.ajax({
+        type: "GET",
+        data: "log&action=check&bssid="+$("#victime").val(),
+        url: "reaver_actions.php",
+        success: function(msg){
+            if(msg=='no')
+            {
+                $("#button_deleteLog").hide();
+                $('#button_deleteLog').attr("disabled",'disabled');
+            }
+            else
+            {
+                $("#button_deleteLog").show();
+                $('#button_deleteLog').removeAttr("disabled");
+            }
+        }
+    });
 }
 
 function refresh_output() 
@@ -158,6 +182,7 @@ function start_attack()
             
             $("#list_ap").slideUp();
             $("#refresh_ap").attr("disabled",'disabled');
+            $("#button_deleteLog").attr("disabled",'disabled');
             $("#option_S").attr('disabled','disabled');
             $("#option_a").attr('disabled','disabled');
             $("#option_c").attr('disabled','disabled');
@@ -188,6 +213,7 @@ function stop_attack()
             $("#option_c").removeAttr('disabled');
             $("#list_ap").slideDown();
             $("#refresh_ap").removeAttr("disabled");
+            log_exists();
             stop_refresh('stop');
             
         }
@@ -263,7 +289,7 @@ function install_reaver()
 
 function up_int(inter) 
 {
-//    var inter = $('#interfaces').val();
+    //    var inter = $('#interfaces').val();
     if(inter=='')
         alert("No interface selected...");
     else
@@ -283,9 +309,9 @@ function up_int(inter)
 
 function down_int(inter) 
 {
-//    var inter = $('#interfaces').val();
+    //    var inter = $('#interfaces').val();
     if(inter=='')
-       alert("No interface selected...");
+        alert("No interface selected...");
     else
     {
         $.ajax({
@@ -301,3 +327,22 @@ function down_int(inter)
     }
 }
 
+function delete_log()
+{
+    var v = $("#victime").val();
+    if(v=='')
+        alert("No victime selected...");
+    else
+    {
+        $.ajax({
+            type: "GET",
+            data: "log&action=delete&bssid="+v,
+            url: "reaver_actions.php",
+            success: function(msg){
+                append_log(msg);
+                refresh_output();
+                log_exists();
+            }
+        });
+    }
+}

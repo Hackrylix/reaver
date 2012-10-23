@@ -1,7 +1,8 @@
-<?php require_once ("reaver_functions.php"); ?>
+<?php require_once ("reaver_functions.php");
+$config = getConfMulti(); ?>
 <html>
     <head>
-        <title>Pineapple Control Center - <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></title>
+        <title>Pineapple Control Center - <?php echo $config['moduleName'] . " [v" . $config['moduleVersion'] . "]"; ?></title>
         <script type="text/javascript" src="reaver.js"></script>
         <script type="text/javascript" src="/includes/jquery.min.js"></script>
         <link rel="stylesheet" type="text/css" href="reaver.css" />
@@ -13,39 +14,39 @@
             $(document).ready(function(){ init(); });
         </script>
 
-        <?php include("/pineapple/includes/navbar.php"); ?>
+<?php include("/pineapple/includes/navbar.php"); ?>
         <div id="modulePanel">
             <div id="leftPanel">
-                <div class="panelTitle"> <?php echo getModuleName() . " [v" . getModuleVersion() . "]"; ?></div>
+                <div class="panelTitle"> <?php echo $config['moduleName'] . " [v" . $config['moduleVersion'] . "]"; ?></div>
                 <div class="panelContent">
                     <?php
                     $isOnUsb = isInstalledOnUsb("reaver");
+                    echo getModuleName();
                     if ($isOnUsb == 2)
                     {
-                        echo "reaver is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[usb]";
+                        echo " is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[usb]";
                     }
                     else if ($isOnUsb == 1)
                     {
-                        echo "reaver is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[internal]";
+                        echo " is <font color=\"lime\"><strong>installed</strong></font>&nbsp;[internal]";
                     }
                     else if ($isOnUsb == 0)
                     {
-
-                        echo "reaver is<font color=\"red\"><strong>not installed</strong></font>";
-                        echo '<input type="button" onclick="install_reaver()" value="install reaver" />';
+                        echo " is <font color=\"red\"><strong>not installed !</strong></font>";
+                        echo '<input type="button" onclick="install_reaver()" value="install" />';
                         if (isUsbMounted())
                             echo '[<input id="onusb" type="checkbox" value="1" /> on usb]';
                         echo "<br /><br />";
                     }
 
                     echo '<hr />';
+                    echo 'Log path :<br />'.$config['logPath'].'<hr />';
                     echo 'Radio interfaces :<br /><div id="list_radio"></div><hr />';
                     echo 'Available wifi interfaces :<br /><div id="list_int"></div><hr />';
                     echo 'Monitored wifi interfaces :<br /><div id="list_mon"></div><hr />';
                     echo 'Log :<br /><textarea id="log" disabled="disabled" cols="30" rows="10"></textarea>';
                     echo '<div align="center" ><hr /><p><img src="loading.gif" id="loading" /></p></div>';
                     ?>
-
 
                 </div>
 
@@ -62,10 +63,12 @@
 
                     Victime :<br />
                     <input type="text" disabled style="background-color: black; color: white;" id="ap" />
-                    <input type="text" disabled style="background-color: black; color: white;" id="victime" />
+                    <input type="text" value="<?php echo $config['lastVictime']; ?>" disabled style="background-color: black; color: white;" id="victime" />
                     <input type="text" size="2" disabled style="background-color: black; color: white;" id="channel" />
                     <input type="button" id="button_start" onclick="start_attack();" value="Attack target" />
                     <input type="button" id="button_stop"  onclick="stop_attack();" value="Stop attack" />
+                    <input type="button" id="button_deleteLog"  onclick="delete_log();" value="Delete log" />
+
                     <br />
                     <input type="checkbox" id="option_S" />&nbsp;Use small DH keys to improve crack speed<br />
                     <input type="checkbox" id="option_a" />&nbsp;Auto detect the best advanced options for the target AP<br />
