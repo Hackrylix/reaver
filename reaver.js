@@ -346,3 +346,23 @@ function delete_log()
         });
     }
 }
+
+function move_log(dest)
+{
+    
+    if(dest=='')
+        alert("No destination provided...");
+    else
+    {
+        $.ajax({
+            type: "GET",
+            data: "log&action=move&dest="+dest,
+            url: "reaver_actions.php",
+            success: function(msg){
+                append_log(msg);
+                refresh_output();
+                log_exists();
+            }
+        });
+    }
+}

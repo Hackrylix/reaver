@@ -1,33 +1,20 @@
 <?php
 
-require_once("iwlist_parser.php");
 require_once("reaver_functions.php");
 
 if (isset($_GET['reaver']))
 {
     if (isset($_GET['install']))
     {
-       $usb=false;
-        if (isset($_GET['onusb']))
-            $usb=true;
-        
-        echo install("reaver",$usb);
+        $usb = (isset($_GET['onusb'])) ? true : false;
+        echo install("reaver", $usb);
     }
     else if (isInstalled("reaver"))
     {
         if (isset($_GET['refresh']))
         {
-            if (isset($_GET['bssid']) && $_GET['bssid'] != "")
-            {
-                $bssid = $_GET['bssid'];
-                $logFile = getConf('logPath').'reaver-'.$bssid.'.log';
-                $cmd = "cat $logFile";
-                exec($cmd, $output);
-                foreach ($output as $outputline)
-                {
-                    echo ("$outputline\n");
-                }
-            }
+            if (isVariableValable($_GET['bssid']))
+                echo refreshLog($_GET['bssid']);
             else
                 echo "No BSSID provided...";
         }
@@ -41,7 +28,7 @@ if (isset($_GET['reaver']))
 
             if ($victime != "" && $int != "")
             {
-                $logFile = getConf('logPath').'reaver-'.$victime.'.log';
+                $logFile = getConf('logPath') . 'reaver-' . $victime . '.log';
                 $options = "";
                 $cmd = "reaver -i $int -b $victime ";
 
@@ -70,7 +57,7 @@ if (isset($_GET['reaver']))
 
                 echo "Attack Started !";
                 echo "\n$cmd";
-                $conf = array('lastVictime' => $victime , 'lastOptions' => $options );
+                $conf = array('lastVictime' => $victime, 'lastOptions' => $options);
                 setConfMulti($conf);
             }
             else
@@ -80,7 +67,7 @@ if (isset($_GET['reaver']))
         }
         else if (isset($_GET['stop']))
         {
-            echo exec("kill `ps -ax | grep reaver | grep -v -e grep | grep -v -e tail | grep -v -e logread | grep -v -e php | awk {'print $1'}`");
+            exec("kill `ps -ax | grep reaver | grep -v -e grep | grep -v -e tail | grep -v -e logread | grep -v -e php | awk {'print $1'}`");
 
             echo "Attack Stopped !";
         }
@@ -90,7 +77,7 @@ if (isset($_GET['reaver']))
         echo 'reaver is not installed...';
     }
 }
-else if (isset($_GET['interface']) && $_GET['interface'] != "")
+else if (isVariableValable($_GET['interface']))
 {
     $interface = $_GET['interface'];
     if (isset($_GET['up']))
@@ -115,135 +102,93 @@ else if (isset($_GET['interface']) && $_GET['interface'] != "")
     }
     else if (isset($_GET['available_ap']))
     {
-        // List APs
-        $iwlistparse = new iwlist_parser();
-        $p = $iwlistparse->parseScanDev($interface);
-
-        if (!empty($p))
-        {
-            echo '<em>Click on a row to select the target AP</em>';
-            echo '<table id="survey-grid" class="grid" cellspacing="0">';
-            echo '<tr class="header">';
-            echo '<td>SSID</td>';
-            echo '<td>BSSID</td>';
-            echo '<td>Signal level</td>';
-            echo '<td colspan="2">Quality level</td>';
-            echo '<td>Ch</td>';
-            echo '<td>Encryption</td>';
-            echo '<td>Cipher</td>';
-            echo '<td>Auth</td>';
-            echo '</tr>';
-        }
-        else
-        {
-            echo "<em>No access-point found, please retry or change the wifi interface used (in left panel)...</em>";
-        }
-
-        for ($i = 1; $i <= count($p[$interface]); $i++)
-        {
-            $quality = $p[$interface][$i]["Quality"];
-
-            if ($quality <= 25)
-                $graph = "red";
-            else if ($quality <= 50)
-                $graph = "yellow";
-            else if ($quality <= 100)
-                $graph = "green";
-            echo '<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . ',' . $p[$interface][$i]["Channel"] . '">';
-
-            echo '<td>' . $p[$interface][$i]["ESSID"] . '</td>';
-            echo '<td>' . $p[$interface][$i]["Address"] . '</td>';
-            echo '<td>' . $p[$interface][$i]["Signal level"] . '</td>';
-            echo "<td>" . $quality . "%</td>";
-            echo "<td width='150'>";
-            echo '<div class="graph-border">';
-            echo '<div class="graph-bar" style="width: ' . $quality . '%; background: ' . $graph . ';"></div>';
-            echo '</div>';
-            echo "</td>";
-            echo '<td>' . $p[$interface][$i]["Channel"] . '</td>';
-
-            if ($p[$interface][$i]["Encryption key"] == "on")
-            {
-                $WPA = strstr($p[$interface][$i]["IE"], "WPA Version 1");
-                $WPA2 = strstr($p[$interface][$i]["IE"], "802.11i/WPA2 Version 1");
-
-                $auth_type = str_replace("\n", " ", $p[$interface][$i]["Authentication Suites (1)"]);
-                $auth_type = implode(' ', array_unique(explode(' ', $auth_type)));
-
-                $cipher = $p[$interface][$i]["Pairwise Ciphers (2)"] ? $p[$interface][$i]["Pairwise Ciphers (2)"] : $p[$interface][$i]["Pairwise Ciphers (1)"];
-                $cipher = str_replace("\n", " ", $cipher);
-                $cipher = implode(',', array_unique(explode(' ', $cipher)));
-
-                if ($WPA2 != "" && $WPA != "")
-                    echo '<td>WPA,WPA2</td>';
-                else if ($WPA2 != "")
-                    echo '<td>WPA2</td>';
-                else if ($WPA != "")
-                    echo '<td>WPA</td>';
-                else
-                    echo '<td>WEP</td>';
-
-                echo '<td>' . $cipher . '</td>';
-                echo '<td>' . $auth_type . '</td>';
-            }
-            else
-            {
-                echo '<td>None</td>';
-                echo '<td>&nbsp;</td>';
-                echo '<td>&nbsp;</td>';
-            }
-
-            echo '</tr>';
-        }
+        echo getAPList($interface);
     }
 }
 else if (isset($_GET['list']))
 {
     if (isset($_GET['radio']))
-    {
-       echo getListRadio();
-    }
+        echo getListRadio();
     else if (isset($_GET['int']))
-    {
         echo getListInterface();
-    }
     else if (isset($_GET['mon']))
-    {
         echo getListMonitor();
-    }
 }
 else if (isset($_GET['log']))
 {
-    if(isset($_GET["action"])&& $_GET['action']!="")
+    if (isVariableValable($_GET['action']))
     {
         $action = $_GET['action'];
-        if($action=="delete")
+        if ($action == "delete")
         {
-            if(isset($_GET["bssid"])&& $_GET['bssid']!="")
-            {
-                $bssid=$_GET['bssid'];
-                $file = getConf('logPath').'reaver-'.$bssid.'.log';
-                if(file_exists($file))
-                {
-                    exec('rm '.$file);
-                    echo "Log file deleted";
-                }
-                else
-                    echo "no log file found";
-            }
+            if (isVariableValable($_GET['bssid']))
+                echo deleteLogFile($_GET['bssid']);
+            else
+                echo "No BSSID provided";
         }
-        else if($action=="check")
+        else if ($action == "check")
         {
-            if(isset($_GET["bssid"])&& $_GET['bssid']!="")
+            if (isVariableValable($_GET['bssid']))
+                echo logFileExists($_GET['bssid']);
+            else
+                echo "No BSSID provided";
+        }
+        else if ($action == "move")
+        {
+            if (isVariableValable($_GET["dest"]))
             {
-                $bssid=$_GET['bssid'];
-                $file = getConf('logPath').'reaver-'.$bssid.'.log';
-                if(file_exists($file))
+                $dest = $_GET['dest'];
+                $logPath = getConf('logPath');
+                if ($dest == "usb")
                 {
-                   echo "yes";
+                    if (isUsbMounted())
+                    {
+                        if (strstr($logPath, 'usb'))
+                            echo "Already on usb";
+                        else
+                        {
+                            $newPath = "/usb/data/reaver/logs/";
+                            if (!is_dir($newPath))
+                                if (!exec("mkdir -p $newPath"))
+                                    echo "Error while creating usb log directory !";
+
+
+                            if (exec('mv ' . $logPath . 'reaver-* ' . $newPath) == "")
+                            {
+                                setConf('logPath', $newPath);
+                                echo 'Logs moved to usb';
+                            }
+                            else
+                            {
+                                echo 'error while moving to usb';
+                            }
+                        }
+                    }
+                    else
+                        echo "No usb detected !";
                 }
-                else
-                    echo "no";
+                else if ($dest == "internal")
+                {
+                    if (strstr($logPath, '/pineapple'))
+                        echo "Already on internal";
+                    else
+                    {
+                        $newPath = "/pineapple/logs/reaver/";
+                        if (!is_dir($newPath))
+                            if (!exec("mkdir -p $newPath"))
+                                echo "Error while creating internal log directory !";
+
+                        if (exec('mv ' . $logPath . 'reaver-* ' . $newPath) == "")
+                        {
+                            setConf('logPath', $newPath);
+                            echo 'logs moved to internal';
+                        }
+                        else
+                        {
+                            echo 'error while moving to internal';
+                        }
+                    }
+                }
             }
         }
     }

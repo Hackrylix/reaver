@@ -1,4 +1,5 @@
 <?php
+require_once("iwlist_parser.php");
 
 function getModuleName()
 {
@@ -124,11 +125,7 @@ function getMonitoredInterfaces()
  */
 function isUsbMounted()
 {
-    $cmd = trim(shell_exec("mount | grep 'on /usb'"));
-    if ($cmd != "")
-        return true;
-    else
-        return false;
+    return (exec("mount | grep \"on /usb\" -c") >= 1) ? true : false;
 }
 
 /**
@@ -264,6 +261,7 @@ function setConf($k, $val)
     else
         return "Error while saving settings";
 }
+
 /**
  * Read the conf file and return the associated array
  * @return Array the config Array
@@ -272,6 +270,7 @@ function getConfMulti()
 {
     return parse_ini_file("reaver.conf");
 }
+
 /**
  * Write modified config in the config file
  * @param Array array to write in file
@@ -282,7 +281,7 @@ function setConfMulti($array)
     $configArray = parse_ini_file("reaver.conf");
     foreach ($array as $key => $value)
     {
-        $configArray[$key]=$value;
+        $configArray[$key] = $value;
     }
     $ok = write_conf_file($configArray, "reaver.conf");
     if ($ok)
@@ -318,4 +317,127 @@ function write_conf_file($configArray, $path)
     fclose($handle);
     return true;
 }
+
+function deleteLogFile($bssid)
+{
+    $file = getConf('logPath') . 'reaver-' . $bssid . '.log';
+    if (file_exists($file))
+    {
+        if (exec('rm ' . $file))
+            return "Log file deleted";
+        else
+            return "Error while deleting the logFile";
+    }
+    else
+        return "no log file found";
+}
+
+function logFileExists($bssid)
+{
+
+    $file = getConf('logPath') . 'reaver-' . $bssid . '.log';
+    if (file_exists($file))
+        return "yes";
+    else
+        return "no";
+}
+
+function isVariableValable($varToCheck)
+{
+    return (isset($varToCheck) && $varToCheck != "") ? true : false;
+}
+
+function getAPList($interface)
+{
+    $iwlistparse = new iwlist_parser();
+    $p = $iwlistparse->parseScanDev($interface);
+    $str = "";
+    if (!empty($p))
+    {
+        $str.= '<em>Click on a row to select the target AP</em>
+                <table id="survey-grid" class="grid" cellspacing="0">
+                    <tr class="header">
+                        <td>SSID</td>
+                        <td>BSSID</td>
+                        <td>Signal level</td>
+                        <td colspan="2">Quality level</td>
+                        <td>Ch</td>
+                        <td>Encryption</td>
+                        <td>Cipher</td>
+                        <td>Auth</td>
+                </tr>';
+    }
+    else
+    {
+        $str.= "<em>No access-point found, please retry or change the wifi interface used (in left panel)...</em>";
+    }
+
+    for ($i = 1; $i <= count($p[$interface]); $i++)
+    {
+        $quality = $p[$interface][$i]["Quality"];
+
+        if ($quality <= 25)
+            $graph = "red";
+        else if ($quality <= 50)
+            $graph = "yellow";
+        else if ($quality <= 100)
+            $graph = "green";
+        $str.='<tr class="odd" name="' . $p[$interface][$i]["ESSID"] . ',' . $p[$interface][$i]["Address"] . ',' . $p[$interface][$i]["Channel"] . '">
+                <td>' . $p[$interface][$i]["ESSID"] . '</td>
+                <td>' . $p[$interface][$i]["Address"] . '</td>
+                <td>' . $p[$interface][$i]["Signal level"] . '</td>
+                <td>' . $quality . '%</td>
+                <td width="150">
+                    <div class="graph-border">
+                        <div class="graph-bar" style="width: ' . $quality . '%; background: ' . $graph . ';"></div>
+                    </div>
+                </td>
+                <td>' . $p[$interface][$i]["Channel"] . '</td>';
+
+        if ($p[$interface][$i]["Encryption key"] == "on")
+        {
+            $WPA = strstr($p[$interface][$i]["IE"], "WPA Version 1");
+            $WPA2 = strstr($p[$interface][$i]["IE"], "802.11i/WPA2 Version 1");
+
+            $auth_type = str_replace("\n", " ", $p[$interface][$i]["Authentication Suites (1)"]);
+            $auth_type = implode(' ', array_unique(explode(' ', $auth_type)));
+
+            $cipher = $p[$interface][$i]["Pairwise Ciphers (2)"] ? $p[$interface][$i]["Pairwise Ciphers (2)"] : $p[$interface][$i]["Pairwise Ciphers (1)"];
+            $cipher = str_replace("\n", " ", $cipher);
+            $cipher = implode(',', array_unique(explode(' ', $cipher)));
+
+            if ($WPA2 != "" && $WPA != "")
+                $str.= '<td>WPA,WPA2</td>';
+            else if ($WPA2 != "")
+                $str.= '<td>WPA2</td>';
+            else if ($WPA != "")
+                $str.= '<td>WPA</td>';
+            else
+                $str.= '<td>WEP</td>';
+
+            $str.= '<td>' . $cipher . '</td><td>' . $auth_type . '</td>';
+        }
+        else
+        {
+            $str.='<td>None</td><td>&nbsp;</td><td>&nbsp;</td>';
+        }
+
+        $str.= '</tr>';
+    }
+    return $str;
+}
+
+function RefreshLog($bssid)
+{
+    $logFile = getConf('logPath') . 'reaver-' . $bssid . '.log';
+    $cmd = "cat $logFile";
+    exec($cmd, $output);
+    $str = "";
+    foreach ($output as $outputline)
+    {
+        $str.= ("$outputline\n");
+    }
+    return $str;
+}
+
 ?>

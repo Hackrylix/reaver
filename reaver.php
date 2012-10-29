@@ -1,5 +1,7 @@
-<?php require_once ("reaver_functions.php");
-$config = getConfMulti(); ?>
+<?php
+require_once ("reaver_functions.php");
+$config = getConfMulti();
+?>
 <html>
     <head>
         <title>Pineapple Control Center - <?php echo $config['moduleName'] . " [v" . $config['moduleVersion'] . "]"; ?></title>
@@ -14,7 +16,7 @@ $config = getConfMulti(); ?>
             $(document).ready(function(){ init(); });
         </script>
 
-<?php include("/pineapple/includes/navbar.php"); ?>
+        <?php include("/pineapple/includes/navbar.php"); ?>
         <div id="modulePanel">
             <div id="leftPanel">
                 <div class="panelTitle"> <?php echo $config['moduleName'] . " [v" . $config['moduleVersion'] . "]"; ?></div>
@@ -40,7 +42,16 @@ $config = getConfMulti(); ?>
                     }
 
                     echo '<hr />';
-                    echo 'Log path :<br />'.$config['logPath'].'<hr />';
+                    echo 'Log path :';
+                    if (isUsbMounted())
+                    {
+                        if (strstr($config['logPath'], 'usb'))
+                            $dest = 'internal';
+                        else
+                            $dest = "usb";
+                        echo '<br />[<a href="javascript:move_log(\'' . $dest . '\');">move to ' . $dest . '</a>]';
+                    }
+                    echo '<br />' . $config['logPath'] . '<hr />';
                     echo 'Radio interfaces :<br /><div id="list_radio"></div><hr />';
                     echo 'Available wifi interfaces :<br /><div id="list_int"></div><hr />';
                     echo 'Monitored wifi interfaces :<br /><div id="list_mon"></div><hr />';
